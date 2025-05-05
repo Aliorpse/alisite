@@ -24,6 +24,10 @@ jobs:
     - name: Install dependencies
       run: pnpm install
       
+    - name: Create production .env file
+      run: |
+        echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" > .env
+      
     - name: Build
       run: pnpm build
       
