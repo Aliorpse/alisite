@@ -33,6 +33,6 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
-        source: "dist/*"
-        target: "/opt/1panel/apps/openresty/openresty/www/sites/aliorpse.tech/index"  # 替换为您的网站目录
-        strip_components: 0 
+        source: "dist/**"
+        target: "/opt/1panel/apps/openresty/openresty/www/sites/aliorpse.tech/index"
+        strip_components: 1 
