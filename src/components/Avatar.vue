@@ -18,7 +18,7 @@ watch(() => route.path, (newPath) => {
       class="avatar-container hidden sm:block"
     >
       <img 
-        src="/src/assets/favicon.png" 
+        src="/assets/favicon.png" 
         alt="Avatar"
         class="w-15 h-15 rounded-full object-cover border-2 border-slate-500/30 transition-transform hover:scale-110"
       />

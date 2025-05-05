@@ -5,7 +5,7 @@ const projects = [
   {
     name: 'aliorpse.tech',
     description: '使用 Vue 3 和 Tailwind CSS 构建的个人博客网站',
-    avatar: '/src/assets/favicon.png',
+    avatar: '/assets/favicon.png',
     link: 'https://aliorpse.tech',
     domain: 'aliorpse.tech'
   },

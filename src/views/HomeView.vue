@@ -61,7 +61,7 @@ onMounted(() => {
   <div class="mx-auto max-w-3xl px-4 sm:px-6 py-12 sm:py-20 min-h-screen flex flex-col items-center">
     <!-- 头像 -->
     <img 
-      src="/src/assets/favicon.png" 
+      src="/assets/favicon.png" 
       alt="Avatar" 
       class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-slate-500/30 object-cover shadow-lg backdrop-blur-sm mb-4 sm:mb-6"
     />

@@ -3,7 +3,7 @@ title: "Markdown 样式测试"
 date: 2025-05-05
 tags: ["测试", "样式"]
 description: "用于测试 Markdown 渲染样式的文章"
-image: "/src/assets/test.jpg"
+image: "/assets/test.jpg"
 ---
 
 # 一级标题
