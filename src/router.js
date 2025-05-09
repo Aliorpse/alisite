@@ -39,4 +39,11 @@ const router = createRouter({
   routes
 })
 
+router.afterEach(() => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+})
+
 export default router

@@ -20,7 +20,7 @@ const socialLinks = [
   }
 ]
 
-const titles = ['<Student />', '<Developer />', '<Galgamer />']
+const titles = ['Student', 'Developer', 'Galgamer']
 const currentTitle = ref('')
 const currentIndex = ref(0)
 const isDeleting = ref(false)
@@ -77,7 +77,10 @@ onMounted(() => {
     <div class="mb-8 sm:mb-10 h-8 sm:h-10">
       <p class="text-2xl sm:text-3xl sm:text-[42px]">
         <span class="bg-gradient-to-t from-slate-300 to-70% to-slate-400 bg-clip-text font-semibold text-transparent sm:bg-gradient-to-r">
-          <span v-if="currentTitle">{{ currentTitle }}</span><span class="text-slate-400 animate-pulse">_</span>
+          <span class="text-slate-400">&lt;</span>
+          <span v-if="currentTitle">{{ currentTitle }}</span>
+          <span class="text-slate-400 animate-pulse">_</span>
+          <span class="text-slate-400">/&gt;</span>
         </span>
       </p>
     </div>

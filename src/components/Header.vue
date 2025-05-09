@@ -72,13 +72,7 @@ const isLinkActive = (path) => {
   opacity: 0;
 }
 
-/* 隐藏滚动条但保持滚动功能 */
-ul::-webkit-scrollbar {
-  display: none;
-}
-
 ul {
-  -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
