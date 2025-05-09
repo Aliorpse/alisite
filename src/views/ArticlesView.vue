@@ -1,9 +1,34 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import PageTitle from '../components/PageTitle.vue'
+import ArticleSearchBar from '../components/ArticleSearchBar.vue'
+import ArticleImage from '../components/ArticleImage.vue'
 
 const router = useRouter()
 const articles = ref([])
+const searchQuery = ref('')
+
+const filteredArticles = computed(() => {
+  if (!searchQuery.value) return articles.value
+  
+  const query = searchQuery.value.toLowerCase()
+  return articles.value.filter(article => {
+    const title = article.frontmatter.title?.toLowerCase() || ''
+    const description = article.frontmatter.description?.toLowerCase() || ''
+    const content = article.content?.toLowerCase() || ''
+    const tags = article.frontmatter.tags?.join(' ').toLowerCase() || ''
+    
+    return title.includes(query) || 
+           description.includes(query) || 
+           content.includes(query) ||
+           tags.includes(query)
+  })
+})
+
+const handleSearch = (query) => {
+  searchQuery.value = query
+}
 
 onMounted(async () => {
   const modules = import.meta.glob('/src/posts/*.md')
@@ -11,7 +36,6 @@ onMounted(async () => {
   const promises = []
   for (const path in modules) {
     promises.push(modules[path]().then(module => {
-      // Extract slug from the path
       const pathParts = path.split('/')
       const fileName = pathParts[pathParts.length - 1]
       const slug = fileName.replace('.md', '')
@@ -26,8 +50,7 @@ onMounted(async () => {
   }
   
   articles.value = await Promise.all(promises)
-  
-  // Sort articles by date (newest first)
+
   articles.value.sort((a, b) => {
     return new Date(b.frontmatter.date || 0) - new Date(a.frontmatter.date || 0)
   })
@@ -51,41 +74,71 @@ const navigateToArticle = (article) => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-4xl px-4 py-16 min-h-screen">
-    <h1 class="text-3xl font-bold mb-8">文章</h1>
+  <div>
+    <PageTitle title="文章">
+      <template #right>
+        <ArticleSearchBar @search="handleSearch" />
+      </template>
+    </PageTitle>
     
-    <div class="space-y-8">
-      <div 
-        v-for="article in articles" 
-        :key="article.path" 
-        class="flex flex-col sm:flex-row w-full items-stretch gap-6 rounded-2xl sm:shadow-[0_0px_1.2px_rgb(140,140,140)] shadow-[0_0px_2px_rgb(140,140,140)] hover:shadow-[0_0px_2px_rgb(140,140,140)] p-3 opacity-90 hover:opacity-100 hover:bg-gray-900/30 transition-colors cursor-pointer"
-        @click="navigateToArticle(article)"
-      >
-        <div class="relative aspect-[48/27] w-full sm:w-80 rounded-2xl shrink-0">
-          <img 
-            v-if="article.frontmatter.image" 
-            :src="article.frontmatter.image" 
-            :alt="article.frontmatter.title" 
-            class="object-cover rounded-2xl h-full w-full" 
-            loading="lazy"
-          />
-          <div v-else class="bg-gray-800 h-full w-full rounded-2xl flex items-center justify-center">
-            <span class="text-gray-400">No image</span>
+    <div class="mx-auto max-w-5xl px-4 py-8 min-h-screen">
+      <div class="space-y-8">
+        <TransitionGroup 
+          name="article-list"
+          tag="div"
+          class="space-y-8"
+        >
+          <div 
+            v-for="(article, index) in filteredArticles" 
+            :key="article.path" 
+            class="flex flex-col sm:flex-row w-full items-stretch gap-6 rounded-2xl sm:shadow-[0_0px_1.2px_rgb(140,140,140)] shadow-[0_0px_2px_rgb(140,140,140)] hover:shadow-[0_0px_2px_rgb(140,140,140)] p-3 opacity-90 hover:opacity-100 hover:bg-gray-900/30 transition-colors cursor-pointer"
+            @click="navigateToArticle(article)"
+            :style="{ '--delay': `${index * 0.1}s` }"
+          >
+            <ArticleImage 
+              :src="article.frontmatter.image"
+              :alt="article.frontmatter.title"
+            />
+            
+            <div class="flex flex-col justify-between flex-grow p-4">
+              <div>
+                <h2 class="mb-2 font-bold text-lg">{{ article.frontmatter.title }}</h2>
+                <p class="text-sm text-gray-400">{{ formatDate(article.frontmatter.date) }} | 
+                  <span v-for="(tag, index) in article.frontmatter.tags" :key="tag">
+                    {{ tag }}{{ index < article.frontmatter.tags.length - 1 ? ', ' : '' }}
+                  </span>
+                </p>
+              </div>
+              <p class="text-sm mt-2">{{ article.frontmatter.description || truncateContent(article.content) }}</p>
+            </div>
           </div>
-        </div>
-        
-        <div class="flex flex-col justify-between flex-grow p-4">
-          <div>
-            <h2 class="mb-2 font-bold text-lg">{{ article.frontmatter.title }}</h2>
-            <p class="text-sm text-gray-400">{{ formatDate(article.frontmatter.date) }} | 
-              <span v-for="(tag, index) in article.frontmatter.tags" :key="tag">
-                {{ tag }}{{ index < article.frontmatter.tags.length - 1 ? ', ' : '' }}
-              </span>
-            </p>
-          </div>
-          <p class="text-sm mt-2">{{ article.frontmatter.description || truncateContent(article.content) }}</p>
-        </div>
+        </TransitionGroup>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.article-list-enter-active,
+.article-list-leave-active {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.article-list-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.article-list-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.article-list-move {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.article-list-enter-active {
+  transition-delay: var(--delay);
+}
+</style>

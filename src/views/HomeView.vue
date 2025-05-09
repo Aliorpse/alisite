@@ -26,7 +26,7 @@ const currentIndex = ref(0)
 const isDeleting = ref(false)
 const typingSpeed = 110
 const deletingSpeed = 120
-const delayBetweenTitles = 1000
+const delayBetweenTitles = 1500
 const delayBeforeNextTitle = 500
 
 const typeWriter = () => {
