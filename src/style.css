@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'system-ui', monospace;
   line-height: 1.5;
   font-weight: 400;
 
@@ -11,7 +11,6 @@
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
 
-  font-synthesis: none;
   text-rendering: optimizeLegibility;
   caret-color: transparent;
 }

@@ -1,7 +1,6 @@
 <script setup>
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
-import Avatar from './components/Avatar.vue'
 import LoginButton from './components/LoginButton.vue'
 import { ref, onMounted } from 'vue'
 
@@ -41,7 +40,6 @@ onMounted(() => {
     </transition>
 
     <Header class="fixed top-8 w-full z-40" />
-    <Avatar class="fixed top-8 left-40"/>
     <LoginButton />
     <main class="flex-grow pt-8">
       <router-view v-slot="{ Component }">

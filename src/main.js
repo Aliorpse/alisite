@@ -9,13 +9,9 @@ import { dark } from '@clerk/themes'
 
 const app = createApp(App)
 
-// 全局注册 highlight.js
 app.directive('highlight', {
-  mounted(el) {
-    const blocks = el.querySelectorAll('pre code')
-    blocks.forEach((block) => {
-      hljs.highlightElement(block)
-    })
+  mounted() {
+    hljs.highlightAll()
   }
 })
 

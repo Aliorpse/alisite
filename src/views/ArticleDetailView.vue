@@ -12,7 +12,7 @@ const showFloatButton = ref(false)
 const formatDate = (date) => {
 	if (!date) return '未知日期'
 	const d = new Date(date)
-	return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+	return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 }
 
 const handleScroll = () => {
@@ -118,6 +118,11 @@ onUnmounted(() => {
 .prose h1, .prose h2, .prose h3 {
 	color: #f3f4f6;
 	font-weight: 600;
+}
+
+.prose em {
+	font-style: italic;
+	color: #e5e7eb;
 }
 
 .prose h1 { font-size: 2.25em; margin: 2em 0 1em; }
