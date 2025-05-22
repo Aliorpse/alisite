@@ -1,28 +1,105 @@
 <script setup>
 import PageTitle from '../components/PageTitle.vue'
 import { useUser } from '@clerk/vue'
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 
 const { isSignedIn, user } = useUser()
 const messageContent = ref('')
 const maxLength = 500
+const messages = ref([])
+const API_BASE_URL = 'https://comments.aliorpse.tech/api'
+const isSending = ref(false)
+
+// 防抖函数
+const debounce = (fn, delay) => {
+  let timer = null
+  return function (...args) {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn.apply(this, args)
+    }, delay)
+  }
+}
+
+// 获取评论列表
+const fetchComments = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/comments`)
+    const data = await response.json()
+    messages.value = data
+  } catch (error) {
+    console.error('获取评论失败:', error)
+  }
+}
+
+// 发送评论
+const sendComment = async () => {
+  if (!messageContent.value.trim() || isSending.value) return
+  
+  isSending.value = true
+  try {
+    const response = await fetch(`${API_BASE_URL}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: user.value.username,
+        avatar: user.value.imageUrl,
+        content: messageContent.value,
+      }),
+    })
+    
+    const newComment = await response.json()
+    messages.value.unshift(newComment)
+    messageContent.value = ''
+    isSending.value = false
+  } catch (error) {
+    console.error('发送评论失败:', error)
+    isSending.value = false
+  }
+}
+
+// 删除评论
+const deleteComment = async (timestamp) => {
+  if (!confirm('确定要删除这条评论吗？')) return
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/comments/${timestamp}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: user.value.username,
+      }),
+    })
+    
+    if (response.ok) {
+      messages.value = messages.value.filter(msg => msg.time !== timestamp)
+    } else {
+      const error = await response.json()
+      alert(error.error || '删除评论失败')
+    }
+  } catch (error) {
+    console.error('删除评论失败:', error)
+    alert('删除评论失败')
+  }
+}
 
 const handleKeyDown = (event) => {
   if (event.key === 'Enter') {
     if (event.ctrlKey) {
-      // 在光标位置插入换行符
       const start = event.target.selectionStart
       const end = event.target.selectionEnd
       messageContent.value = messageContent.value.substring(0, start) + '\n' + messageContent.value.substring(end)
-      // 将光标位置移动到换行符后
       nextTick(() => {
         event.target.selectionStart = event.target.selectionEnd = start + 1
         adjustTextareaHeight(event.target)
       })
     } else {
       event.preventDefault()
-      // TODO: 这里添加发送消息的逻辑
-      console.log('发送消息:', messageContent.value)
+      sendComment()
     }
   }
 }
@@ -36,26 +113,22 @@ const handleInput = (event) => {
   adjustTextareaHeight(event.target)
 }
 
-const messages = ref([
-  {
-    username: 'aliorpse1',
-    avatar: 'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ2l0aHViL2ltZ18yd2RIS3pvZ1RPOTZuMHJMY3J2MDRybm5KdmsifQ',
-    time: '17 days ago',
-    content: '212121212121212121212121131223123131231231223123212121212121212121212121131223123131231231223123212121212121212121212121131223123131231231223123212121212121212121212121131223123131231231223123212121212121212121212121131223123131231231223123212121212121212121212121131223123131231231223123'
-  },
-  {
-    username: 'aliorpse2',
-    avatar: 'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ2l0aHViL2ltZ18yd2RIS3pvZ1RPOTZuMHJMY3J2MDRybm5KdmsifQ',
-    time: '17 days ago',
-    content: '21212121212121212121212113122312313123123122312321212121212121212121212113122312313123123'
-  },
-  {
-    username: 'aliorpse2',
-    avatar: 'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ2l0aHViL2ltZ18yd2RIS3pvZ1RPOTZuMHJMY3J2MDRybm5KdmsifQ',
-    time: '17 days ago',
-    content: 'test'
-  },
-])
+// 格式化时间
+const formatTime = (timestamp) => {
+  const now = Math.floor(Date.now() / 1000)
+  const diff = now - timestamp
+  
+  if (diff < 60) return '刚刚'
+  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`
+  if (diff < 2592000) return `${Math.floor(diff / 86400)}天前`
+  if (diff < 31536000) return `${Math.floor(diff / 2592000)}个月前`
+  return `${Math.floor(diff / 31536000)}年前`
+}
+
+onMounted(() => {
+  fetchComments()
+})
 </script>
 
 <template>
@@ -85,7 +158,7 @@ const messages = ref([
               <textarea 
                 v-model="messageContent"
                 class="message-input p-0 w-full text-sm bg-transparent border-none outline-none resize-none placeholder-gray-500 text-gray-300 disabled:opacity-50"
-                placeholder="写下你的留言... (尚未完成)"
+                placeholder="写下你的留言..."
                 name="message"
                 :maxlength="maxLength"
                 @keydown="handleKeyDown"
@@ -97,6 +170,8 @@ const messages = ref([
                 <button 
                   type="submit" 
                   class="flex items-center justify-center gap-1.5 text-gray-400 hover:text-gray-300 transition-colors"
+                  @click="sendComment"
+                  :disabled="isSending"
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -112,7 +187,7 @@ const messages = ref([
                     <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
                     <path d="m21.854 2.147-10.94 10.939"></path>
                   </svg>
-                  <span class="font-bold">发送</span>
+                  <span class="font-bold">{{ isSending ? '发送中...' : '发送' }}</span>
                 </button>
               </div>
             </div>
@@ -121,7 +196,7 @@ const messages = ref([
 
         <!-- 留言列表 -->
         <ul class="flex flex-col space-y-4">
-          <li v-for="(message, index) in messages" :key="message.username" class="flex items-start gap-3 relative">
+          <li v-for="(message, index) in messages" :key="message.time" class="flex items-start gap-3 relative">
             <div class="flex flex-col items-center flex-shrink-0 gap-2">
               <img 
                 :src="message.avatar" 
@@ -135,7 +210,14 @@ const messages = ref([
             <div class="flex flex-col w-full">
               <div class="flex items-center gap-2">
                 <p class="text-gray-300">{{ message.username }}</p>
-                <span class="text-xs text-gray-500">{{ message.time }}</span>
+                <span class="text-xs text-gray-500">{{ formatTime(message.time) }}</span>
+                <button 
+                  v-if="isSignedIn && user?.username === message.username"
+                  @click="deleteComment(message.time)"
+                  class="ml-2 text-xs text-gray-500 hover:text-red-400 transition-colors"
+                >
+                  删除
+                </button>
               </div>
               <p class="mt-1 text-sm text-gray-400 break-words whitespace-pre-wrap max-w-[calc(100%-4rem)]">{{ message.content }}</p>
             </div>
