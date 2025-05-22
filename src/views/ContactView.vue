@@ -113,6 +113,7 @@ const deleteComment = async (timestamp) => {
 const handleKeyDown = (event) => {
   if (event.key === 'Enter') {
     if (event.ctrlKey || event.shiftKey) {
+      event.preventDefault()
       const start = event.target.selectionStart
       const end = event.target.selectionEnd
       messageContent.value = messageContent.value.substring(0, start) + '\n' + messageContent.value.substring(end)
