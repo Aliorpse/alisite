@@ -1,7 +1,7 @@
 <script setup>
 import PageTitle from '../components/PageTitle.vue'
 import { useUser } from '@clerk/vue'
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick, onMounted, watch } from 'vue'
 
 const { isSignedIn, user } = useUser()
 const messageContent = ref('')
@@ -10,6 +10,8 @@ const messages = ref([])
 const API_BASE_URL = 'https://comments.aliorpse.tech/api'
 const isSending = ref(false)
 const isLoading = ref(true)
+const isDeleting = ref(false)
+const deleteCommentId = ref(null)
 
 // 防抖函数
 const debounce = (fn, delay) => {
@@ -28,7 +30,17 @@ const fetchComments = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/comments`)
     const data = await response.json()
-    messages.value = data
+    // 更新评论列表中的用户信息
+    messages.value = data.map(comment => {
+      if (comment.userId === user.value?.id) {
+        return {
+          ...comment,
+          username: user.value.username || user.value.primaryEmailAddress.emailAddress,
+          avatar: user.value.imageUrl
+        }
+      }
+      return comment
+    })
   } catch (error) {
     console.error('获取评论失败:', error)
   } finally {
@@ -48,7 +60,8 @@ const sendComment = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: user.value.username,
+        userId: user.value.id,
+        username: user.value.username || user.value.primaryEmailAddress.emailAddress,
         avatar: user.value.imageUrl,
         content: messageContent.value,
       }),
@@ -66,7 +79,10 @@ const sendComment = async () => {
 
 // 删除评论
 const deleteComment = async (timestamp) => {
-  if (!confirm('确定要删除这条评论吗？')) return
+  if (!confirm('确定要删除这条评论吗？此操作不可恢复。')) return
+  
+  isDeleting.value = true
+  deleteCommentId.value = timestamp
   
   try {
     const response = await fetch(`${API_BASE_URL}/comments/${timestamp}`, {
@@ -75,7 +91,7 @@ const deleteComment = async (timestamp) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: user.value.username,
+        userId: user.value.id,
       }),
     })
     
@@ -87,13 +103,16 @@ const deleteComment = async (timestamp) => {
     }
   } catch (error) {
     console.error('删除评论失败:', error)
-    alert('删除评论失败')
+    alert('删除评论失败，请稍后重试')
+  } finally {
+    isDeleting.value = false
+    deleteCommentId.value = null
   }
 }
 
 const handleKeyDown = (event) => {
   if (event.key === 'Enter') {
-    if (event.ctrlKey) {
+    if (event.ctrlKey || event.shiftKey) {
       const start = event.target.selectionStart
       const end = event.target.selectionEnd
       messageContent.value = messageContent.value.substring(0, start) + '\n' + messageContent.value.substring(end)
@@ -129,6 +148,23 @@ const formatTime = (timestamp) => {
   if (diff < 31536000) return `${Math.floor(diff / 2592000)}个月前`
   return `${Math.floor(diff / 31536000)}年前`
 }
+
+// 监听用户信息变化
+watch(() => user.value, (newUser) => {
+  if (newUser) {
+    // 更新当前用户的评论信息
+    messages.value = messages.value.map(comment => {
+      if (comment.userId === newUser.id) {
+        return {
+          ...comment,
+          username: newUser.username || newUser.primaryEmailAddress.emailAddress,
+          avatar: newUser.imageUrl
+        }
+      }
+      return comment
+    })
+  }
+}, { deep: true })
 
 onMounted(() => {
   fetchComments()
@@ -216,14 +252,27 @@ onMounted(() => {
             </div>
             <div class="flex flex-col w-full">
               <div class="flex items-center gap-2">
-                <p class="text-gray-300">{{ message.username }}</p>
+                <p class="text-gray-300">
+                  {{ message.username }}
+                </p>
                 <span class="text-xs text-gray-500">{{ formatTime(message.time) }}</span>
                 <button 
-                  v-if="isSignedIn && user?.username === message.username"
+                  v-if="isSignedIn && message.userId === user?.id"
                   @click="deleteComment(message.time)"
-                  class="ml-2 text-xs text-gray-500 hover:text-red-400 transition-colors"
+                  class="ml-2 text-xs text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                  :disabled="isDeleting && deleteCommentId === message.time"
                 >
-                  删除
+                  <svg 
+                    v-if="isDeleting && deleteCommentId === message.time"
+                    class="animate-spin h-3 w-3" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    fill="none" 
+                    viewBox="0 0 24 24"
+                  >
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>{{ isDeleting && deleteCommentId === message.time ? '删除中...' : '删除' }}</span>
                 </button>
               </div>
               <p class="mt-1 text-sm text-gray-400 break-words whitespace-pre-wrap max-w-[calc(100%-4rem)]">{{ message.content }}</p>
