@@ -13,17 +13,6 @@ const isLoading = ref(true)
 const isDeleting = ref(false)
 const deleteCommentId = ref(null)
 
-// 防抖函数
-const debounce = (fn, delay) => {
-  let timer = null
-  return function (...args) {
-    if (timer) clearTimeout(timer)
-    timer = setTimeout(() => {
-      fn.apply(this, args)
-    }, delay)
-  }
-}
-
 // 获取评论列表
 const fetchComments = async () => {
   isLoading.value = true
