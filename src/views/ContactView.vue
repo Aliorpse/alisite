@@ -9,6 +9,7 @@ const maxLength = 500
 const messages = ref([])
 const API_BASE_URL = 'https://comments.aliorpse.tech/api'
 const isSending = ref(false)
+const isLoading = ref(true)
 
 // 防抖函数
 const debounce = (fn, delay) => {
@@ -23,12 +24,15 @@ const debounce = (fn, delay) => {
 
 // 获取评论列表
 const fetchComments = async () => {
+  isLoading.value = true
   try {
     const response = await fetch(`${API_BASE_URL}/comments`)
     const data = await response.json()
     messages.value = data
   } catch (error) {
     console.error('获取评论失败:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -195,7 +199,10 @@ onMounted(() => {
         </div>
 
         <!-- 留言列表 -->
-        <ul class="flex flex-col space-y-4">
+        <div v-if="isLoading" class="flex justify-center items-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
+        </div>
+        <ul v-else class="flex flex-col space-y-4">
           <li v-for="(message, index) in messages" :key="message.time" class="flex items-start gap-3 relative">
             <div class="flex flex-col items-center flex-shrink-0 gap-2">
               <img 
@@ -256,5 +263,15 @@ onMounted(() => {
 .message-input::selection {
   background-color: rgb(148, 163, 184);
   color: white;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 </style>
