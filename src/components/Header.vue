@@ -15,10 +15,16 @@ const navItems = [
 ]
 
 const updateBackgroundPosition = (path) => {
-  const index = navItemsRefs.value.findIndex(item => item.__vnode.key === path)
+  if (!navItemsRefs.value || navItemsRefs.value.length === 0) return
+  
+  const index = navItemsRefs.value.findIndex(item => {
+    return item && item.__vnode && item.__vnode.key === path
+  })
   if (index === -1) return
   
   const item = navItemsRefs.value[index]
+  if (!item || !item.getBoundingClientRect || !item.parentElement) return
+  
   const rect = item.getBoundingClientRect()
   const parentRect = item.parentElement.getBoundingClientRect()
   
