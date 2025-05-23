@@ -1,7 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', 'system-ui', monospace;
+  font-family: 'JetBrains Mono', 'system-ui', monospace;
   line-height: 1.5;
   font-weight: 400;
 
