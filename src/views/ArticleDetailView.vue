@@ -150,7 +150,7 @@ onUnmounted(() => {
 	padding: 0.2em 0.4em;
 	border-radius: 0.25em;
 	font-size: 0.875em;
-	margin: 0 3px;
+	margin: 0 0.1em;
 }
 
 .prose pre {
