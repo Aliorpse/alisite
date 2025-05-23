@@ -26,13 +26,24 @@ const updateBackgroundPosition = (path) => {
   document.documentElement.style.setProperty('--item-left', `${rect.left - parentRect.left}px`)
 }
 
-const isLinkActive = (path) => path === '/' ? route.path === '/' : route.path.startsWith(path)
-
-watch([hoveredItem, () => route.path], ([newPath]) => {
-  if (newPath) {
-    updateBackgroundPosition(newPath)
+const isLinkActive = (path) => {
+  if (path === '/') {
+    return route.path === '/'
   }
-}, { immediate: true })
+  return route.path.startsWith(path)
+}
+
+// 监听路由变化和悬停状态
+watch(
+  [() => route.path, hoveredItem],
+  ([newPath, newHoveredItem]) => {
+    const activePath = newHoveredItem || navItems.find(item => isLinkActive(item.path))?.path
+    if (activePath) {
+      updateBackgroundPosition(activePath)
+    }
+  },
+  { immediate: true }
+)
 
 const handleMouseLeave = () => {
   hoveredItem.value = null
