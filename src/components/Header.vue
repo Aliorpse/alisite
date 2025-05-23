@@ -51,7 +51,7 @@ const handleMouseLeave = () => {
   <div class="flex justify-center items-center gap-4">
     <ul class="items-center justify-center bg-[#f2f2f21a] backdrop-blur-md rounded-full flex overflow-x-auto px-2 py-1 mx-4 sm:mx-0 w-auto scrollbar-none relative">
       <div 
-        class="absolute top-0.5 bottom-0.5 bg-[#f2f2f20d] rounded-full transition-all duration-300 pointer-events-none"
+        class="absolute top-1.5 bottom-1.5 bg-[#f2f2f20d] rounded-full transition-all duration-300 pointer-events-none"
         :style="{
           width: 'var(--item-width)',
           left: 'var(--item-left)',

@@ -2,6 +2,7 @@
 import PageTitle from '../components/PageTitle.vue'
 import { useUser } from '@clerk/vue'
 import { ref, nextTick, onMounted, watch } from 'vue'
+import { Icon } from '@iconify/vue'
 
 const { isSignedIn, user } = useUser()
 const messageContent = ref('')
@@ -184,22 +185,11 @@ onMounted(fetchComments)
                   @click="sendComment"
                   :disabled="loadingState.sending"
                 >
-                  <svg 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    width="15" 
-                    height="15" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    stroke-width="2" 
-                    stroke-linecap="round" 
-                    stroke-linejoin="round"
-                    class="transition-transform duration-300"
+                  <Icon 
+                    :icon="loadingState.sending ? 'mdi:loading' : 'mingcute:send-line'" 
+                    class="w-4 h-4"
                     :class="{ 'animate-spin': loadingState.sending }"
-                  >
-                    <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
-                    <path d="m21.854 2.147-10.94 10.939"></path>
-                  </svg>
+                  />
                   <span class="font-bold">{{ loadingState.sending ? '发送中...' : '发送' }}</span>
                 </button>
               </div>
@@ -235,16 +225,11 @@ onMounted(fetchComments)
                   class="ml-2 text-xs text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1"
                   :disabled="loadingState.deleting && loadingState.deleteId === message.time"
                 >
-                  <svg 
+                  <Icon 
                     v-if="loadingState.deleting && loadingState.deleteId === message.time"
-                    class="animate-spin h-3 w-3" 
-                    xmlns="http://www.w3.org/2000/svg" 
-                    fill="none" 
-                    viewBox="0 0 24 24"
-                  >
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+                    icon="mdi:loading"
+                    class="animate-spin h-3 w-3"
+                  />
                   <span>{{ loadingState.deleting && loadingState.deleteId === message.time ? '删除中...' : '删除' }}</span>
                 </button>
               </div>
