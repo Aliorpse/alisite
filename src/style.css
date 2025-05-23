@@ -5,7 +5,7 @@
 @import "tailwindcss";
 
 :root {
-  font-family: 'JetBrains Mono', 'MiSans', 'system-ui', monospace;
+  font-family: 'JetBrains Mono', 'MiSans';
   line-height: 1.5;
   font-weight: 400;
 
