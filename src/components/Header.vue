@@ -15,15 +15,8 @@ const navItems = [
 ]
 
 const updateBackgroundPosition = (path) => {
-  if (!navItemsRefs.value || navItemsRefs.value.length === 0) return
-  
-  const index = navItemsRefs.value.findIndex(item => {
-    return item && item.__vnode && item.__vnode.key === path
-  })
-  if (index === -1) return
-  
-  const item = navItemsRefs.value[index]
-  if (!item || !item.getBoundingClientRect || !item.parentElement) return
+  const item = navItemsRefs.value.find(el => el?.dataset?.path === path)
+  if (!item) return
   
   const rect = item.getBoundingClientRect()
   const parentRect = item.parentElement.getBoundingClientRect()
@@ -32,23 +25,17 @@ const updateBackgroundPosition = (path) => {
   document.documentElement.style.setProperty('--item-left', `${rect.left - parentRect.left}px`)
 }
 
-const isLinkActive = (path) => {
-  if (path === '/') {
-    return route.path === '/'
-  }
-  return route.path.startsWith(path)
-}
+const isLinkActive = (path) => path === '/' ? route.path === '/' : route.path.startsWith(path)
 
-// 监听路由变化和悬停状态
 watch(
   [() => route.path, hoveredItem],
-  ([newPath, newHoveredItem]) => {
+  ([, newHoveredItem]) => {
     const activePath = newHoveredItem || navItems.find(item => isLinkActive(item.path))?.path
     if (activePath) {
-      updateBackgroundPosition(activePath)
+      setTimeout(() => updateBackgroundPosition(activePath), 10)
     }
   },
-  { immediate: true }
+  { immediate: true, flush: 'post' }
 )
 
 const handleMouseLeave = () => {
@@ -74,6 +61,7 @@ const handleMouseLeave = () => {
       <li
         v-for="item in navItems"
         :key="item.path"
+        :data-path="item.path"
         class="relative flex-shrink-0"
         @mouseover="hoveredItem = item.path"
         @mouseleave="handleMouseLeave"
