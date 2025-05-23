@@ -122,6 +122,7 @@ onUnmounted(() => {
 .prose em {
 	font-style: italic;
 	color: #e5e7eb;
+	margin: 0 0.1em;
 }
 
 .prose h1 { font-size: 2.25em; margin: 2em 0 1em; }
@@ -149,6 +150,7 @@ onUnmounted(() => {
 	padding: 0.2em 0.4em;
 	border-radius: 0.25em;
 	font-size: 0.875em;
+	margin: 0 3px;
 }
 
 .prose pre {
