@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/jetbrains-mono@1.0.6/css/jetbrains-mono.min.css');
+@import url('https://cdn.jsdelivr.net/npm/misans@4.1.0/lib/Normal/MiSans-Medium.min.css');
 @import "tailwindcss";
 
 :root {
-  font-family: 'JetBrains Mono', 'system-ui', monospace;
+  font-family: 'JetBrains Mono', 'MiSans', 'system-ui', monospace;
   line-height: 1.5;
   font-weight: 400;
 
