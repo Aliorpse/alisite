@@ -6,23 +6,17 @@ import { ref } from 'vue'
 const clerk = useClerk()
 const isLoading = ref(false)
 
-const openSignIn = async () => {
+const handleAction = async (action) => {
   isLoading.value = true
   try {
-    await clerk.value.openSignIn()
+    await action()
   } finally {
     isLoading.value = false
   }
 }
 
-const openUserProfile = async () => {
-  isLoading.value = true
-  try {
-    await clerk.value.openUserProfile()
-  } finally {
-    isLoading.value = false
-  }
-}
+const openSignIn = () => handleAction(() => clerk.value.openSignIn())
+const openUserProfile = () => handleAction(() => clerk.value.openUserProfile())
 
 const { isSignedIn, user } = useUser()
 </script>

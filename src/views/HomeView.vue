@@ -1,6 +1,6 @@
 <script setup>
 import { Icon } from '@iconify/vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 const socialLinks = [
   {
@@ -29,6 +29,8 @@ const deletingSpeed = 120
 const delayBetweenTitles = 1500
 const delayBeforeNextTitle = 500
 
+let typeWriterTimer = null
+
 const typeWriter = () => {
   const currentWord = titles[currentIndex.value]
   
@@ -49,11 +51,17 @@ const typeWriter = () => {
     typeSpeed = delayBeforeNextTitle
   }
 
-  setTimeout(typeWriter, typeSpeed)
+  typeWriterTimer = setTimeout(typeWriter, typeSpeed)
 }
 
 onMounted(() => {
-  setTimeout(typeWriter, typingSpeed)
+  typeWriterTimer = setTimeout(typeWriter, typingSpeed)
+})
+
+onBeforeUnmount(() => {
+  if (typeWriterTimer) {
+    clearTimeout(typeWriterTimer)
+  }
 })
 </script>
 
@@ -64,6 +72,8 @@ onMounted(() => {
       src="/assets/favicon.png" 
       alt="Avatar" 
       class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-slate-500/30 object-cover shadow-lg backdrop-blur-sm mb-4 sm:mb-6"
+      loading="eager"
+      decoding="async"
     />
 
     <!-- 主标题 -->
@@ -102,6 +112,7 @@ onMounted(() => {
         :key="link.name"
         :href="link.url"
         target="_blank"
+        rel="noopener noreferrer"
         class="group relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-slate-500/30 p-[6px] opacity-80 transition-all duration-500 hover:scale-110 hover:opacity-100 hover:border-slate-500 backdrop-blur-sm"
       >
         <Icon :icon="link.icon" class="text-slate-400 text-xl sm:text-2xl" />

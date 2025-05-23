@@ -8,46 +8,58 @@ const messageContent = ref('')
 const maxLength = 500
 const messages = ref([])
 const API_BASE_URL = 'https://comments.aliorpse.tech/api'
-const isSending = ref(false)
-const isLoading = ref(true)
-const isDeleting = ref(false)
-const deleteCommentId = ref(null)
+const loadingState = ref({ sending: false, loading: true, deleting: false, deleteId: null })
+
+// 格式化时间
+const formatTime = (timestamp) => {
+  const now = Math.floor(Date.now() / 1000)
+  const diff = now - timestamp
+  
+  if (diff < 60) return '刚刚'
+  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`
+  if (diff < 2592000) return `${Math.floor(diff / 86400)}天前`
+  if (diff < 31536000) return `${Math.floor(diff / 2592000)}个月前`
+  return `${Math.floor(diff / 31536000)}年前`
+}
+
+// 更新评论中的用户信息
+const updateUserInfo = (comments) => {
+  return comments.map(comment => {
+    if (comment.userId === user.value?.id) {
+      return {
+        ...comment,
+        username: user.value.username || user.value.primaryEmailAddress.emailAddress,
+        avatar: user.value.imageUrl
+      }
+    }
+    return comment
+  })
+}
 
 // 获取评论列表
 const fetchComments = async () => {
-  isLoading.value = true
+  loadingState.value.loading = true
   try {
     const response = await fetch(`${API_BASE_URL}/comments`)
     const data = await response.json()
-    // 更新评论列表中的用户信息
-    messages.value = data.map(comment => {
-      if (comment.userId === user.value?.id) {
-        return {
-          ...comment,
-          username: user.value.username || user.value.primaryEmailAddress.emailAddress,
-          avatar: user.value.imageUrl
-        }
-      }
-      return comment
-    })
+    messages.value = updateUserInfo(data)
   } catch (error) {
     console.error('获取评论失败:', error)
   } finally {
-    isLoading.value = false
+    loadingState.value.loading = false
   }
 }
 
 // 发送评论
 const sendComment = async () => {
-  if (!messageContent.value.trim() || isSending.value) return
+  if (!messageContent.value.trim() || loadingState.value.sending) return
   
-  isSending.value = true
+  loadingState.value.sending = true
   try {
     const response = await fetch(`${API_BASE_URL}/comments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: user.value.id,
         username: user.value.username || user.value.primaryEmailAddress.emailAddress,
@@ -59,10 +71,10 @@ const sendComment = async () => {
     const newComment = await response.json()
     messages.value.unshift(newComment)
     messageContent.value = ''
-    isSending.value = false
   } catch (error) {
     console.error('发送评论失败:', error)
-    isSending.value = false
+  } finally {
+    loadingState.value.sending = false
   }
 }
 
@@ -70,18 +82,14 @@ const sendComment = async () => {
 const deleteComment = async (timestamp) => {
   if (!confirm('确定要删除这条评论吗？此操作不可恢复。')) return
   
-  isDeleting.value = true
-  deleteCommentId.value = timestamp
+  loadingState.value.deleting = true
+  loadingState.value.deleteId = timestamp
   
   try {
     const response = await fetch(`${API_BASE_URL}/comments/${timestamp}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId: user.value.id,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.value.id }),
     })
     
     if (response.ok) {
@@ -94,11 +102,18 @@ const deleteComment = async (timestamp) => {
     console.error('删除评论失败:', error)
     alert('删除评论失败，请稍后重试')
   } finally {
-    isDeleting.value = false
-    deleteCommentId.value = null
+    loadingState.value.deleting = false
+    loadingState.value.deleteId = null
   }
 }
 
+// 处理文本区域高度
+const adjustTextareaHeight = (textarea) => {
+  textarea.style.height = 'auto'
+  textarea.style.height = textarea.scrollHeight + 'px'
+}
+
+// 处理键盘事件
 const handleKeyDown = (event) => {
   if (event.key === 'Enter') {
     if (event.ctrlKey || event.shiftKey) {
@@ -117,48 +132,14 @@ const handleKeyDown = (event) => {
   }
 }
 
-const adjustTextareaHeight = (textarea) => {
-  textarea.style.height = 'auto'
-  textarea.style.height = textarea.scrollHeight + 'px'
-}
-
-const handleInput = (event) => {
-  adjustTextareaHeight(event.target)
-}
-
-// 格式化时间
-const formatTime = (timestamp) => {
-  const now = Math.floor(Date.now() / 1000)
-  const diff = now - timestamp
-  
-  if (diff < 60) return '刚刚'
-  if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`
-  if (diff < 2592000) return `${Math.floor(diff / 86400)}天前`
-  if (diff < 31536000) return `${Math.floor(diff / 2592000)}个月前`
-  return `${Math.floor(diff / 31536000)}年前`
-}
-
 // 监听用户信息变化
 watch(() => user.value, (newUser) => {
   if (newUser) {
-    // 更新当前用户的评论信息
-    messages.value = messages.value.map(comment => {
-      if (comment.userId === newUser.id) {
-        return {
-          ...comment,
-          username: newUser.username || newUser.primaryEmailAddress.emailAddress,
-          avatar: newUser.imageUrl
-        }
-      }
-      return comment
-    })
+    messages.value = updateUserInfo(messages.value)
   }
 }, { deep: true })
 
-onMounted(() => {
-  fetchComments()
-})
+onMounted(fetchComments)
 </script>
 
 <template>
@@ -192,7 +173,7 @@ onMounted(() => {
                 name="message"
                 :maxlength="maxLength"
                 @keydown="handleKeyDown"
-                @input="handleInput"
+                @input="e => adjustTextareaHeight(e.target)"
                 style="min-height: 20px; max-height: 200px; overflow-y: auto;"
               ></textarea>
               <div class="opacity-100 transition-opacity duration-1000 text-xs text-gray-500 flex items-center justify-between gap-2">
@@ -201,7 +182,7 @@ onMounted(() => {
                   type="submit" 
                   class="flex items-center justify-center gap-1.5 text-gray-400 hover:text-gray-300 transition-colors"
                   @click="sendComment"
-                  :disabled="isSending"
+                  :disabled="loadingState.sending"
                 >
                   <svg 
                     xmlns="http://www.w3.org/2000/svg" 
@@ -213,11 +194,13 @@ onMounted(() => {
                     stroke-width="2" 
                     stroke-linecap="round" 
                     stroke-linejoin="round"
+                    class="transition-transform duration-300"
+                    :class="{ 'animate-spin': loadingState.sending }"
                   >
                     <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path>
                     <path d="m21.854 2.147-10.94 10.939"></path>
                   </svg>
-                  <span class="font-bold">{{ isSending ? '发送中...' : '发送' }}</span>
+                  <span class="font-bold">{{ loadingState.sending ? '发送中...' : '发送' }}</span>
                 </button>
               </div>
             </div>
@@ -225,7 +208,7 @@ onMounted(() => {
         </div>
 
         <!-- 留言列表 -->
-        <div v-if="isLoading" class="flex justify-center items-center py-8">
+        <div v-if="loadingState.loading" class="flex justify-center items-center py-8">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
         </div>
         <ul v-else class="flex flex-col space-y-4">
@@ -237,23 +220,23 @@ onMounted(() => {
                 width="40"
                 height="40"
                 class="mb-1 rounded-full"
+                loading="lazy"
+                decoding="async"
               />
               <div v-if="index !== messages.length - 1" class="absolute left-5 top-14 bottom-0 w-0.5 bg-gray-500/30"></div>
             </div>
             <div class="flex flex-col w-full">
               <div class="flex items-center gap-2">
-                <p class="text-gray-300">
-                  {{ message.username }}
-                </p>
+                <p class="text-gray-300">{{ message.username }}</p>
                 <span class="text-xs text-gray-500">{{ formatTime(message.time) }}</span>
                 <button 
                   v-if="isSignedIn && message.userId === user?.id"
                   @click="deleteComment(message.time)"
                   class="ml-2 text-xs text-gray-500 hover:text-red-400 transition-colors flex items-center gap-1"
-                  :disabled="isDeleting && deleteCommentId === message.time"
+                  :disabled="loadingState.deleting && loadingState.deleteId === message.time"
                 >
                   <svg 
-                    v-if="isDeleting && deleteCommentId === message.time"
+                    v-if="loadingState.deleting && loadingState.deleteId === message.time"
                     class="animate-spin h-3 w-3" 
                     xmlns="http://www.w3.org/2000/svg" 
                     fill="none" 
@@ -262,7 +245,7 @@ onMounted(() => {
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>{{ isDeleting && deleteCommentId === message.time ? '删除中...' : '删除' }}</span>
+                  <span>{{ loadingState.deleting && loadingState.deleteId === message.time ? '删除中...' : '删除' }}</span>
                 </button>
               </div>
               <p class="mt-1 text-sm text-gray-400 break-words whitespace-pre-wrap max-w-[calc(100%-4rem)]">{{ message.content }}</p>
@@ -275,26 +258,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.bg-secondary {
-  background-color: var(--secondary);
-}
-
-.text-muted-foreground {
-  color: var(--muted-foreground);
-}
-
-.bg-primary {
-  background-color: var(--primary);
-}
-
-.text-primary-foreground {
-  color: var(--primary-foreground);
-}
-
-.border-foreground {
-  border-color: var(--foreground);
-}
-
 .message-input {
   caret-color: rgb(148, 163, 184) !important;
 }
@@ -305,9 +268,7 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .animate-spin {

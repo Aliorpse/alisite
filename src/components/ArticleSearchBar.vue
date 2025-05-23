@@ -5,13 +5,20 @@ import { Icon } from '@iconify/vue'
 const searchQuery = ref('')
 const emit = defineEmits(['search'])
 
-let debounceTimer = null
+const debounce = (fn, delay) => {
+  let timer = null
+  return (...args) => {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), delay)
+  }
+}
+
+const debouncedEmit = debounce((value) => {
+  emit('search', value)
+}, 300)
 
 watch(searchQuery, (newValue) => {
-  if (debounceTimer) clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    emit('search', newValue)
-  }, 300)
+  debouncedEmit(newValue)
 })
 </script>
 

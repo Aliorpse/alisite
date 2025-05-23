@@ -12,23 +12,18 @@ const showFloatButton = ref(false)
 const formatDate = (date) => {
 	if (!date) return '未知日期'
 	const d = new Date(date)
-	return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
+	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 const handleScroll = () => {
 	showFloatButton.value = window.scrollY > 200
 }
 
-onMounted(async () => {
+const loadArticle = async () => {
 	try {
 		const modules = import.meta.glob('../posts/*.md')
-		let targetPath = null
-		for (const path in modules) {
-			if (path.endsWith(`${slug.value}.md`)) {
-				targetPath = path
-				break
-			}
-		}
+		const targetPath = Object.keys(modules).find(path => path.endsWith(`${slug.value}.md`))
+		
 		if (targetPath) {
 			const module = await modules[targetPath]()
 			article.value = {
@@ -36,12 +31,16 @@ onMounted(async () => {
 				component: module.default,
 			}
 		}
-		window.addEventListener('scroll', handleScroll)
 	} catch (error) {
 		console.error('Error loading article:', error)
 	} finally {
 		loading.value = false
 	}
+}
+
+onMounted(() => {
+	loadArticle()
+	window.addEventListener('scroll', handleScroll)
 })
 
 onUnmounted(() => {

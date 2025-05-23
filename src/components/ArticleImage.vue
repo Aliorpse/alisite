@@ -13,20 +13,17 @@ const props = defineProps({
 })
 
 const isLoading = ref(true)
-const imageLoaded = ref(false)
 let debounceTimer = null
 
 const handleImageLoad = () => {
   if (debounceTimer) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
-    imageLoaded.value = true
     isLoading.value = false
   }, 300)
 }
 
 const handleImageError = () => {
   isLoading.value = false
-  imageLoaded.value = false
 }
 
 onMounted(() => {

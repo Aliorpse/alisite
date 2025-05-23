@@ -1,30 +1,44 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import PageTitle from '../components/PageTitle.vue'
+import { computed } from 'vue'
 
 const projects = [
   {
     name: 'aliorpse.tech',
     description: '使用 Vue 3 和 Tailwind CSS 构建的个人博客网站',
-    avatar: '/assets/favicon.png',
     link: 'https://aliorpse.tech',
-    domain: 'aliorpse.tech'
+    tech: ['Vue 3', 'Tailwind CSS']
   },
   {
     name: 'api.aliorpse.tech',
     description: '基于 Express 的个人 API 服务',
-    avatar: 'https://avatars.githubusercontent.com/u/5658226?s=200&v=4',
     link: 'https://docs.api.aliorpse.tech',
-    domain: 'docs.api.aliorpse.tech'
+    tech: ['Express', 'Node.js', 'Redis']
   },
   {
     name: 'karin-plugins-alijs',
     description: '基于 Karin 框架的 App 插件仓库',
-    avatar: 'https://karin.fun/images/logo-2.png',
     link: 'https://github.com/Aliorpse/karin-plugins-alijs',
-    domain: 'github.com'
+    tech: ['Node.js', 'Karin']
   }
 ]
+
+// 从链接中提取域名
+const getDomain = (url) => {
+  try {
+    const domain = new URL(url).hostname
+    return domain.startsWith('www.') ? domain.slice(4) : domain
+  } catch {
+    return url
+  }
+}
+const projectsWithDomain = computed(() => {
+  return projects.map(project => ({
+    ...project,
+    domain: getDomain(project.link)
+  }))
+})
 </script>
 
 <template>
@@ -32,27 +46,55 @@ const projects = [
     <PageTitle title="项目" />
     
     <div class="mx-auto max-w-5xl px-4 py-8 min-h-screen">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
         <div
-          v-for="project in projects"
+          v-for="project in projectsWithDomain"
           :key="project.name"
-          class="relative flex flex-col items-start justify-between gap-6 p-5 border border-gray-500/30 rounded-2xl hover:bg-gray-800/50 transition-all duration-300 h-full"
+          class="group relative flex flex-col items-start justify-between gap-6 p-6 border border-gray-500/30 rounded-2xl hover:bg-gray-800/50 transition-all duration-300 h-full overflow-hidden"
         >
-          <a :href="project.link" target="_blank" class="absolute inset-0 z-10"></a>
-          <div class="relative flex items-center justify-center w-12 h-12 overflow-hidden rounded-full">
-            <img
-              :alt="project.name"
-              :src="project.avatar"
-              class="w-full h-full object-cover"
+          <!-- 背景渐变 -->
+          <div 
+            class="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 from-slate-500/20 to-slate-600/20"
+          ></div>
+          
+          <a 
+            :href="project.link" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="absolute inset-0 z-10"
+          ></a>
+
+          <!-- 项目内容 -->
+          <div class="relative flex flex-col flex-grow w-full">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-semibold text-lg group-hover:text-slate-300 transition-colors duration-300">
+                {{ project.name }}
+              </h2>
+            </div>
+            
+            <p class="text-sm font-light text-gray-400 mb-4 min-h-[40px]">
+              {{ project.description }}
+            </p>
+
+            <!-- 技术栈标签 -->
+            <div class="flex flex-wrap gap-2 mb-4 min-h-[28px]">
+              <span 
+                v-for="tech in project.tech" 
+                :key="tech"
+                class="inline-flex items-center justify-center px-2 py-1 text-xs rounded-full bg-gray-800/50 text-gray-300"
+              >
+                {{ tech }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 域名信息 -->
+          <div class="relative flex items-center gap-2 text-sm text-gray-400 group-hover:text-sky-300 transition-colors duration-300">
+            <span class="font-mono">{{ project.domain }}</span>
+            <Icon 
+              icon="lucide:external-link" 
+              class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" 
             />
-          </div>
-          <div class="flex flex-col flex-grow">
-            <h2 class="mb-4 font-semibold text-lg">{{ project.name }}</h2>
-            <p class="text-sm font-light text-gray-400">{{ project.description }}</p>
-          </div>
-          <div class="flex items-center gap-2 text-sm text-gray-400">
-            <span>{{ project.domain }}</span>
-            <Icon icon="lucide:external-link" class="w-4 h-4" />
           </div>
         </div>
       </div>
