@@ -163,7 +163,6 @@ onUnmounted(() => {
 .prose pre code {
 	background-color: transparent;
 	padding: 0;
-	font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
 }
 
 .prose ul, .prose ol {
