@@ -10,7 +10,7 @@ const socialLinks = [
   },
   {
     name: 'email',
-    url: 'mailto:aliorpse@qq.com',
+    url: 'mailto:mail@aliorpse.tech',
     icon: 'mdi:email-outline'
   },
   {
