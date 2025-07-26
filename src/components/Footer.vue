@@ -1,6 +1,4 @@
 <script setup>
-import { Icon } from '@iconify/vue'
-
 const currentYear = new Date().getFullYear()
 </script>
 

@@ -12,15 +12,21 @@ const projects = [
   },
   {
     name: 'api.aliorpse.tech',
-    description: '基于 Express 的个人 API 服务',
-    link: 'https://docs.api.aliorpse.tech',
-    tech: ['Express', 'Node.js', 'Redis']
+    description: '基于 Spring Boot 的个人 API 服务',
+    link: 'https://api.aliorpse.tech',
+    tech: ['SpringBoot', 'Kotlin', 'Redis']
   },
   {
     name: 'karin-plugins-alijs',
     description: '基于 Karin 框架的 App 插件仓库',
     link: 'https://github.com/Aliorpse/karin-plugins-alijs',
     tech: ['Node.js', 'Karin']
+  },
+  {
+    name: 'kotlin-mcutils',
+    description: '使用 kotlin 开发的 Minecraft 请求库',
+    link: 'https://github.com/Aliorpse/kotlin-mcutils',
+    tech: ['Kotlin', 'Moshi', "Retrofit"]
   }
 ]
 

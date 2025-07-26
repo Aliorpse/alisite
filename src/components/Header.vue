@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, RouterLink } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
 const route = useRoute()

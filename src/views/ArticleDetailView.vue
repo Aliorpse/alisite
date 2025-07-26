@@ -165,7 +165,7 @@ onUnmounted(() => {
 .prose pre code {
 	background-color: transparent;
 	padding: 0;
-	font-family: 'JetBrains Mono', 'MiSans';
+	font-family: 'JetBrains Mono', 'MiSans', sans-serif;
 }
 
 .prose ul, .prose ol {

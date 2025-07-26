@@ -10,7 +10,7 @@ const socialLinks = [
   },
   {
     name: 'email',
-    url: 'mailto:mail@aliorpse.tech',
+    url: 'mailto:aliorpse@qq.com',
     icon: 'mdi:email-outline'
   },
   {
@@ -101,7 +101,7 @@ onBeforeUnmount(() => {
     </p>
 
     <!-- 个人简介 -->
-    <p class="mb-6 sm:mb-8 bg-gradient-to-b from-slate-300 to-slate-400 bg-clip-text text-xs sm:text-sm text-transparent sm:text-base text-center px-4">
+    <p class="mb-6 sm:mb-8 bg-gradient-to-b from-slate-300 to-slate-400 bg-clip-text text-xs sm:text-sm text-transparent text-center px-4">
       一名在读高中生。喜欢做一些有趣的前端小项目。
     </p>
 
