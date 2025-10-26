@@ -227,7 +227,6 @@ def main(size):
 			
 			use_item(Items.Weird_Substance, substance_amount)
 
-import utils
 clear()
 main(12)
 ```
