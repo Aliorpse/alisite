@@ -23,10 +23,10 @@ const projects = [
     tech: ['Node.js', 'Karin']
   },
   {
-    name: 'kotlin-mcutils',
+    name: 'mcutils',
     description: '使用 kotlin 开发的 Minecraft 请求库',
-    link: 'https://github.com/Aliorpse/kotlin-mcutils',
-    tech: ['Kotlin', 'Moshi', "Retrofit"]
+    link: 'https://github.com/Aliorpse/mcutils',
+    tech: ['Kotlin']
   }
 ]
 
